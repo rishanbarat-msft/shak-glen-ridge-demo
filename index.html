@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shake Shack | A Conversation with Glen Ridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --shak-green: #7AC143; --shak-dark: #131211; --shak-dark2: #1c1a19;
+            --shak-white: #FFFFFF; --shak-off-white: #FAFAF8; --shak-light-green: #E8F5E0;
+            --shak-mid-green: #4C8C2B; --shak-cream: #F5F1EB;
+            --glass: rgba(255,255,255,0.06); --glass-border: rgba(255,255,255,0.08);
+            --radius: 20px; --radius-sm: 12px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter','Segoe UI',system-ui,sans-serif;
+            background: var(--shak-dark); color: var(--shak-dark);
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
+        }
+
+        .reveal { opacity:0; transform:translateY(40px); transition: opacity 0.8s cubic-bezier(.22,1,.36,1), transform 0.8s cubic-bezier(.22,1,.36,1); }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+        .reveal-delay-1 { transition-delay:0.1s; } .reveal-delay-2 { transition-delay:0.2s; }
+        .reveal-delay-3 { transition-delay:0.3s; } .reveal-delay-4 { transition-delay:0.4s; }
+
+        nav {
+            position:fixed; top:0; width:100%; z-index:1000;
+            background:rgba(19,18,17,0.75); backdrop-filter:blur(24px) saturate(1.4);
+            -webkit-backdrop-filter:blur(24px) saturate(1.4);
+            border-bottom:1px solid var(--glass-border);
+            padding:0 48px; display:flex; align-items:center; justify-content:space-between; height:64px;
+        }
+        .nav-logo { height:32px; display:flex; align-items:center; gap:12px; }
+        .nav-logo img { height:32px; filter:brightness(0) invert(1); }
+        nav ul { list-style:none; display:flex; gap:8px; }
+        nav ul li a {
+            color:rgba(255,255,255,0.6); text-decoration:none; font-size:13px; font-weight:500;
+            letter-spacing:0.3px; padding:8px 14px; border-radius:8px; transition:all 0.25s;
+        }
+        nav ul li a:hover { color:var(--shak-white); background:rgba(122,193,67,0.12); }
+
+        .hero {
+            min-height:100vh; display:flex; align-items:center; justify-content:center;
+            position:relative; overflow:hidden; background:var(--shak-dark);
+        }
+        .hero-bg {
+            position:absolute; inset:0; background-image:url('images/msp.jpg');
+            background-size:cover; background-position:center; opacity:0.2; filter:blur(2px);
+        }
+        .hero-bg::after {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(180deg, rgba(19,18,17,0.4) 0%, rgba(19,18,17,0.95) 100%);
+        }
+        .hero-content { position:relative; z-index:2; text-align:center; max-width:900px; padding:40px; }
+        .hero-badge {
+            display:inline-flex; align-items:center; gap:8px;
+            background:rgba(122,193,67,0.12); border:1px solid rgba(122,193,67,0.25);
+            padding:8px 20px; border-radius:40px;
+            font-size:11px; font-weight:600; letter-spacing:2px;
+            color:var(--shak-green); text-transform:uppercase; margin-bottom:32px;
+        }
+        .hero-badge::before {
+            content:''; width:8px; height:8px; background:var(--shak-green);
+            border-radius:50%; animation:pulse 2s infinite;
+        }
+        .hero h1 {
+            font-family:'Playfair Display',serif; font-size:clamp(44px,6.5vw,76px);
+            color:var(--shak-white); font-weight:700; line-height:1.08; margin-bottom:24px;
+        }
+        .hero h1 em { color:var(--shak-green); font-style:italic; }
+        .hero-sub { font-size:17px; color:rgba(255,255,255,0.5); line-height:1.7; max-width:640px; margin:0 auto 12px; }
+        .hero-est { font-size:12px; color:rgba(255,255,255,0.25); letter-spacing:3px; margin-bottom:40px; }
+        .hero-presenter {
+            display:inline-flex; align-items:center; gap:16px;
+            background:var(--glass); border:1px solid var(--glass-border);
+            backdrop-filter:blur(16px); padding:16px 28px; border-radius:60px;
+        }
+        .hero-presenter .avatar {
+            width:44px; height:44px;
+            background:linear-gradient(135deg,var(--shak-green),var(--shak-mid-green));
+            border-radius:50%; display:flex; align-items:center; justify-content:center;
+            font-size:16px; font-weight:700; color:white;
+        }
+        .hero-presenter .info { text-align:left; }
+        .hero-presenter .info strong { display:block; color:var(--shak-white); font-size:15px; font-weight:600; }
+        .hero-presenter .info span { color:rgba(255,255,255,0.45); font-size:13px; }
+        .hero-scroll {
+            position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+            color:rgba(255,255,255,0.3); font-size:11px; letter-spacing:2px; text-transform:uppercase;
+            display:flex; flex-direction:column; align-items:center; gap:8px;
+            animation:float 3s ease-in-out infinite;
+        }
+        .hero-scroll .arrow { width:18px; height:18px; border-right:2px solid rgba(255,255,255,0.3); border-bottom:2px solid rgba(255,255,255,0.3); transform:rotate(45deg); }
+        @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(8px);} }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+        .img-strip { display:flex; gap:0; overflow:hidden; height:260px; }
+        .img-strip img { height:100%; min-width:340px; object-fit:cover; flex-shrink:0; filter:saturate(1.05); transition:transform 0.5s; }
+        .img-strip img:hover { transform:scale(1.04); }
+
+        .sec { padding:100px 48px; max-width:100%; }
+        .sec-inner { max-width:1200px; margin:0 auto; }
+        .sec-white { background:var(--shak-white); } .sec-cream { background:var(--shak-cream); }
+        .sec-dark { background:var(--shak-dark); } .sec-dark2 { background:var(--shak-dark2); }
+        .sec-label { display:inline-block; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--shak-green); margin-bottom:16px; }
+        .sec-title { font-family:'Playfair Display',serif; font-size:clamp(30px,3.8vw,46px); font-weight:700; line-height:1.15; margin-bottom:16px; }
+        .sec-dark .sec-title, .sec-dark2 .sec-title { color:var(--shak-white); }
+        .sec-subtitle { font-size:16px; color:#777; line-height:1.7; max-width:620px; margin-bottom:56px; }
+        .sec-dark .sec-subtitle, .sec-dark2 .sec-subtitle { color:rgba(255,255,255,0.45); }
+
+        .letter-layout { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start; }
+        .letter-body { font-size:16px; line-height:2; color:#444; }
+        .letter-body p+p { margin-top:20px; }
+        .letter-body .signature { margin-top:32px; font-style:italic; color:var(--shak-mid-green); font-weight:600; }
+        .letter-cnbc { background:linear-gradient(135deg,#f0fbe8,#e8f5e0); padding:32px; border-radius:var(--radius); font-family:'Playfair Display',serif; font-size:19px; font-style:italic; color:var(--shak-mid-green); line-height:1.55; position:relative; }
+        .letter-cnbc::before { content:'\201C'; position:absolute; top:12px; left:20px; font-size:64px; color:var(--shak-green); opacity:0.2; font-family:'Playfair Display',serif; }
+        .letter-cnbc cite { display:block; margin-top:16px; font-style:normal; font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--shak-dark); letter-spacing:1px; text-transform:uppercase; }
+        .letter-img { width:100%; border-radius:var(--radius); object-fit:cover; height:280px; margin-top:28px; }
+
+        .story-layout { display:grid; grid-template-columns:380px 1fr; gap:64px; align-items:start; }
+        .story-img-stack img { width:100%; border-radius:var(--radius); object-fit:cover; }
+        .story-img-stack img:first-child { height:300px; }
+        .story-img-stack img:last-child { height:200px; margin-top:16px; }
+        .timeline { position:relative; padding-left:48px; }
+        .timeline::before { content:''; position:absolute; left:15px; top:8px; bottom:8px; width:2px; background:linear-gradient(180deg,var(--shak-green),rgba(122,193,67,0.1)); }
+        .timeline-item { position:relative; margin-bottom:36px; }
+        .timeline-item::before { content:''; position:absolute; left:-40px; top:6px; width:12px; height:12px; background:var(--shak-green); border-radius:50%; box-shadow:0 0 0 4px var(--shak-cream); }
+        .timeline-item h4 { font-size:13px; font-weight:700; color:var(--shak-green); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+        .timeline-item p { font-size:15px; color:#555; line-height:1.65; }
+        .founding-quote { margin-top:40px; padding:24px 28px; background:var(--shak-white); border-radius:var(--radius-sm); border-left:4px solid var(--shak-green); font-family:'Playfair Display',serif; font-size:16px; font-style:italic; color:var(--shak-mid-green); line-height:1.55; }
+        .founding-quote cite { display:block; margin-top:10px; font-style:normal; font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:#888; }
+
+        .promise-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+        .promise-card { background:var(--shak-white); border-radius:var(--radius); padding:36px 28px; border:1px solid #eee; transition:transform 0.4s cubic-bezier(.22,1,.36,1), box-shadow 0.4s; }
+        .promise-card:hover { transform:translateY(-6px); box-shadow:0 20px 60px rgba(0,0,0,0.06); }
+        .promise-card .tag { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--shak-green); margin-bottom:12px; }
+        .promise-card h3 { font-family:'Playfair Display',serif; font-size:22px; color:var(--shak-dark); margin-bottom:12px; }
+        .promise-card p { font-size:14px; color:#666; line-height:1.7; }
+        .cnbc-tag { margin-top:32px; font-size:13px; font-style:italic; color:var(--shak-mid-green); text-align:center; line-height:1.6; }
+        .cnbc-tag cite { font-style:normal; font-weight:600; font-size:11px; color:#999; }
+
+        .why-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; }
+        .why-card { background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:32px; transition:background 0.3s; }
+        .why-card:hover { background:rgba(255,255,255,0.1); }
+        .why-card h3 { font-family:'Playfair Display',serif; font-size:20px; color:var(--shak-white); margin-bottom:12px; }
+        .why-card p { font-size:14px; color:rgba(255,255,255,0.6); line-height:1.7; }
+
+        .faq-grid { display:flex; flex-direction:column; gap:16px; }
+        .faq-item { background:var(--shak-white); border-radius:var(--radius); padding:28px 32px; border:1px solid #eee; transition:box-shadow 0.3s; }
+        .faq-item:hover { box-shadow:0 8px 30px rgba(0,0,0,0.05); }
+        .faq-item h4 { font-family:'Playfair Display',serif; font-size:18px; color:var(--shak-dark); margin-bottom:10px; }
+        .faq-item p { font-size:14px; color:#666; line-height:1.7; }
+
+        .design-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+        .design-card { background:var(--shak-white); border-radius:var(--radius); overflow:hidden; transition:transform 0.4s cubic-bezier(.22,1,.36,1), box-shadow 0.4s; }
+        .design-card:hover { transform:translateY(-6px); box-shadow:0 20px 60px rgba(0,0,0,0.08); }
+        .design-card-img { height:200px; width:100%; object-fit:cover; }
+        .design-card-body { padding:28px; }
+        .design-card-body h3 { font-size:17px; font-weight:700; color:var(--shak-dark); margin-bottom:10px; }
+        .design-card-body p { font-size:14px; color:#666; line-height:1.65; }
+
+        .process-track { display:flex; gap:0; position:relative; justify-content:center; }
+        .process-track::before { content:''; position:absolute; top:35px; left:8%; right:8%; height:2px; background:linear-gradient(90deg,var(--shak-green),rgba(122,193,67,0.15)); }
+        .process-step { flex:1; max-width:240px; text-align:center; position:relative; z-index:1; }
+        .process-num { width:70px; height:70px; background:var(--shak-cream); border:3px solid var(--shak-green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:var(--shak-green); margin:0 auto 16px; transition:all 0.3s; }
+        .process-step:hover .process-num { background:var(--shak-green); color:white; }
+        .process-step h4 { font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--shak-dark); margin-bottom:8px; }
+        .process-step p { font-size:13px; color:#888; line-height:1.55; }
+        .standards-row { margin-top:56px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        .standard-item { padding:20px; background:var(--shak-white); border-radius:var(--radius-sm); border:1px solid #eee; }
+        .standard-item h4 { font-size:13px; font-weight:700; color:var(--shak-green); margin-bottom:6px; }
+        .standard-item p { font-size:12px; color:#888; line-height:1.5; }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+        .stat-card { text-align:center; padding:36px 20px; background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); transition:background 0.3s; }
+        .stat-card:hover { background:rgba(255,255,255,0.1); }
+        .stat-card .num { font-family:'Playfair Display',serif; font-size:42px; font-weight:700; color:var(--shak-green); line-height:1; }
+        .stat-card .label { font-size:13px; color:rgba(255,255,255,0.5); margin-top:8px; line-height:1.5; }
+        .stat-card .label small { font-size:11px; color:rgba(255,255,255,0.3); }
+        .stat-note { margin-top:32px; text-align:center; font-size:15px; color:rgba(255,255,255,0.6); font-style:italic; line-height:1.6; }
+
+        .pledge-list { max-width:800px; }
+        .pledge-item { display:flex; align-items:flex-start; gap:16px; padding:20px 0; border-bottom:1px solid #eee; }
+        .pledge-item:last-child { border:none; }
+        .pledge-check { width:28px; height:28px; flex-shrink:0; margin-top:2px; background:var(--shak-light-green); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--shak-green); font-size:14px; font-weight:700; }
+        .pledge-item p { font-size:15px; color:#444; line-height:1.65; }
+        .pledge-cta { margin-top:40px; padding:24px 32px; background:linear-gradient(135deg,rgba(122,193,67,0.08),rgba(122,193,67,0.03)); border:1px solid rgba(122,193,67,0.2); border-radius:var(--radius); }
+        .pledge-cta .tag { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--shak-green); margin-bottom:8px; }
+        .pledge-cta p { font-size:15px; color:var(--shak-dark); font-weight:600; }
+
+        .loc-gallery { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:48px; }
+        .loc-card { position:relative; border-radius:var(--radius); overflow:hidden; height:220px; }
+        .loc-card img { width:100%; height:100%; object-fit:cover; transition:transform 0.6s cubic-bezier(.22,1,.36,1); }
+        .loc-card:hover img { transform:scale(1.08); }
+        .loc-card .loc-overlay { position:absolute; bottom:0; left:0; right:0; padding:20px; background:linear-gradient(transparent,rgba(0,0,0,0.75)); }
+        .loc-card .loc-overlay span { font-size:13px; font-weight:600; color:var(--shak-white); }
+
+        .closing { min-height:75vh; display:flex; align-items:center; position:relative; overflow:hidden; }
+        .closing-bg { position:absolute; inset:0; background-image:url('images/interior.jpg'); background-size:cover; background-position:center; opacity:0.12; filter:blur(3px); }
+        .closing-content { position:relative; z-index:1; }
+        .closing-quote { font-family:'Playfair Display',serif; font-size:clamp(28px,3.5vw,48px); font-style:italic; color:var(--shak-green); max-width:720px; line-height:1.3; margin-bottom:12px; }
+        .closing-sub { font-family:'Playfair Display',serif; font-size:clamp(22px,2.5vw,36px); color:rgba(255,255,255,0.6); margin-bottom:40px; }
+        .closing-cite { color:rgba(255,255,255,0.35); font-size:14px; margin-bottom:40px; }
+        .closing-thanks { font-size:20px; color:var(--shak-white); font-weight:600; margin-bottom:8px; }
+        .closing-qa { font-size:15px; color:rgba(255,255,255,0.45); font-style:italic; }
+
+        footer { background:var(--shak-dark); border-top:1px solid var(--glass-border); padding:32px 48px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.3); }
+        footer a { color:var(--shak-green); text-decoration:none; }
+
+        .chatbot-toggle { position:fixed; bottom:28px; right:28px; width:64px; height:64px; background:linear-gradient(135deg,var(--shak-green),var(--shak-mid-green)); border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 32px rgba(122,193,67,0.35); z-index:10000; transition:all 0.3s cubic-bezier(.22,1,.36,1); }
+        .chatbot-toggle:hover { transform:scale(1.1); box-shadow:0 12px 48px rgba(122,193,67,0.45); }
+        .chatbot-toggle svg { width:26px; height:26px; fill:white; }
+        .chatbot-panel { position:fixed; bottom:104px; right:28px; width:400px; height:560px; background:var(--shak-white); border-radius:24px; box-shadow:0 24px 80px rgba(0,0,0,0.25); z-index:10000; display:none; flex-direction:column; overflow:hidden; animation:chatSlideUp 0.4s cubic-bezier(.22,1,.36,1); }
+        .chatbot-panel.open { display:flex; }
+        @keyframes chatSlideUp { from{opacity:0;transform:translateY(20px) scale(0.95);} to{opacity:1;transform:translateY(0) scale(1);} }
+        .chatbot-header { background:linear-gradient(135deg,var(--shak-green),var(--shak-mid-green)); padding:20px 24px; color:white; display:flex; align-items:center; gap:12px; }
+        .chatbot-header .bot-avatar { width:36px; height:36px; background:rgba(255,255,255,0.2); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+        .chatbot-header .bot-info strong { display:block; font-size:14px; font-weight:700; }
+        .chatbot-header .bot-info span { font-size:11px; opacity:0.8; }
+        .chatbot-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; background:var(--shak-off-white); }
+        .chatbot-messages::-webkit-scrollbar { width:4px; }
+        .chatbot-messages::-webkit-scrollbar-thumb { background:#ddd; border-radius:4px; }
+        .chat-msg { max-width:82%; padding:12px 16px; border-radius:16px; font-size:13px; line-height:1.6; animation:msgFade 0.35s cubic-bezier(.22,1,.36,1); }
+        @keyframes msgFade { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+        .chat-msg.bot { background:var(--shak-white); color:var(--shak-dark); align-self:flex-start; border-bottom-left-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        .chat-msg.user { background:linear-gradient(135deg,var(--shak-green),var(--shak-mid-green)); color:white; align-self:flex-end; border-bottom-right-radius:4px; }
+        .chat-suggestions { display:flex; flex-wrap:wrap; gap:6px; padding:0 20px 12px; background:var(--shak-off-white); }
+        .chat-suggestions button { background:var(--shak-white); border:1px solid #e0e0e0; padding:6px 14px; border-radius:20px; font-size:11px; font-family:'Inter',sans-serif; color:#666; cursor:pointer; transition:all 0.2s; }
+        .chat-suggestions button:hover { border-color:var(--shak-green); color:var(--shak-green); }
+        .chatbot-input { display:flex; padding:16px; border-top:1px solid #eee; gap:10px; background:var(--shak-white); }
+        .chatbot-input input { flex:1; border:1px solid #e0e0e0; border-radius:24px; padding:12px 20px; font-size:13px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.3s; background:var(--shak-off-white); }
+        .chatbot-input input:focus { border-color:var(--shak-green); background:white; }
+        .chatbot-input button { background:linear-gradient(135deg,var(--shak-green),var(--shak-mid-green)); border:none; border-radius:50%; width:42px; height:42px; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
+        .chatbot-input button:hover { transform:scale(1.08); }
+        .chatbot-input button svg { width:18px; height:18px; fill:white; }
+        .typing-indicator { display:flex; gap:5px; padding:12px 16px; align-self:flex-start; }
+        .typing-indicator span { width:8px; height:8px; background:#ccc; border-radius:50%; animation:typingBounce 1.4s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay:0.15s; }
+        .typing-indicator span:nth-child(3) { animation-delay:0.3s; }
+        @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:0.4;} 30%{transform:translateY(-8px);opacity:1;} }
+
+        @media(max-width:1024px) {
+            .letter-layout,.story-layout{grid-template-columns:1fr;}
+            .promise-grid,.why-grid,.stats-grid{grid-template-columns:1fr;}
+            .design-grid{grid-template-columns:1fr;}
+            .loc-gallery{grid-template-columns:repeat(2,1fr);}
+            .standards-row{grid-template-columns:1fr;}
+        }
+        @media(max-width:768px) {
+            .sec{padding:60px 24px;} nav{padding:0 24px;} nav ul{display:none;}
+            .chatbot-panel{width:calc(100% - 32px);right:16px;bottom:96px;height:480px;}
+            .process-track{flex-direction:column;align-items:center;}
+            .process-track::before{display:none;}
+            .loc-gallery{grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo"><img src="images/logo.svg" alt="Shake Shack"></div>
+    <ul>
+        <li><a href="#letter">From Rob</a></li>
+        <li><a href="#our-story">Our Story</a></li>
+        <li><a href="#promise">Our Promise</a></li>
+        <li><a href="#why-gr">Why Glen Ridge</a></li>
+        <li><a href="#design">Design</a></li>
+        <li><a href="#concerns">Q&amp;A</a></li>
+        <li><a href="#impact">Impact</a></li>
+        <li><a href="#pledge">Our Pledge</a></li>
+    </ul>
+</nav>
+
+<div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+        <div class="hero-badge">A Conversation with Our Neighbors</div>
+        <h1>A Good Neighbor on<br><em>Bloomfield Avenue.</em></h1>
+        <p class="hero-sub">Bringing Shake Shack to Glen Ridge &#8212; designed for your district, built with your community.</p>
+        <p class="hero-est">EST. 2004 &middot; MADISON SQUARE PARK, NYC</p>
+        <div class="hero-presenter">
+            <div class="avatar">RL</div>
+            <div class="info">
+                <strong>Rob Lynch</strong>
+                <span>Chief Executive Officer &middot; Shake Shack</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll">Scroll<div class="arrow"></div></div>
+</div>
+
+<div class="img-strip">
+    <img src="images/exterior.jpg" alt="Shake Shack Exterior">
+    <img src="images/burger.jpg" alt="Burgers and Fries">
+    <img src="images/dupont.jpg" alt="Dupont Circle">
+    <img src="images/shake.jpg" alt="Shakes">
+    <img src="images/interior.jpg" alt="Interior">
+    <img src="images/chicken.jpg" alt="Chicken Sandwich">
+    <img src="images/newbury.jpg" alt="Newbury Street">
+</div>
+
+<section class="sec sec-white" id="letter">
+    <div class="sec-inner">
+        <span class="sec-label reveal">A Note from the CEO</span>
+        <h2 class="sec-title reveal">Neighbors first. <em style="font-family:'Playfair Display',serif">Always.</em></h2>
+        <div class="letter-layout">
+            <div class="letter-body reveal reveal-delay-1">
+                <p>I grew up in towns like yours. The kind where Saturday morning starts on Main Street, where the trees have been there longer than anyone remembers, and where a new storefront is everyone&#8217;s business &#8212; because it should be.</p>
+                <p>That&#8217;s how we want to come to Glen Ridge. Not as a chain rolling into town &#8212; but as a small business that wants to <strong>belong here</strong>.</p>
+                <p>We&#8217;ve built Shake Shack one community at a time since the very first stand in Madison Square Park, and we&#8217;d be honored to build one with you.</p>
+                <p>This deck is our opening note. It is not our final design. The final design will be shaped &#8212; block by block, stone by stone &#8212; by <em>you</em>.</p>
+                <p class="signature">&#8212; Rob Lynch</p>
+            </div>
+            <div>
+                <div class="letter-cnbc reveal reveal-delay-2">
+                    Now&#8217;s our opportunity to bring Shake Shack to a lot more communities &#8212; the right way.
+                    <cite>Rob Lynch &middot; CNBC, January 2025</cite>
+                </div>
+                <img src="images/msp.jpg" alt="Madison Square Park" class="letter-img reveal reveal-delay-3">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="sec sec-cream" id="our-story">
+    <div class="sec-inner">
+        <span class="sec-label reveal">Our Story</span>
+        <h2 class="sec-title reveal">Born in a public park.</h2>
+        <p class="sec-subtitle reveal">Shake Shack didn&#8217;t start as a chain. It started as a neighborhood favor.</p>
+        <div class="story-layout">
+            <div class="story-img-stack reveal">
+                <img src="images/msp2.jpg" alt="Madison Square Park Original">
+                <img src="images/glendale.jpg" alt="Modern Shake Shack">
+            </div>
+            <div>
+                <div class="timeline reveal reveal-delay-1">
+                    <div class="timeline-item">
+                        <h4>2001 &#8212; A Summer Hot Dog Cart</h4>
+                        <p>Set up by Danny Meyer in Madison Square Park to support a public art installation. Not a business plan &#8212; a neighborhood gesture.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2004 &#8212; The First Shack Opens</h4>
+                        <p>A permanent kiosk &#8212; designed to give back to the park that hosted us. The community made us; we didn&#8217;t make the community.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>Today &#8212; 550+ Shacks Worldwide</h4>
+                        <p>Still operated like a neighborhood spot. Still rooted in the place we came from. Each one hand-built, hand-staffed, hand-picked.</p>
+                    </div>
+                </div>
+                <div class="founding-quote reveal reveal-delay-2">
+                    Stand for something good &#8212; fine ingredients, kind service, real community. A Shack should make a neighborhood better than it found it.
+                    <cite>&#8212; Our founding principle</cite>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="sec sec-white" id="promise">
+    <div class="sec-inner">
+        <span class="sec-label reveal">Executive Summary</span>
+        <h2 class="sec-title reveal">What we&#8217;re asking &#8212;<br>and what we&#8217;re promising.</h2>
+        <p class="sec-subtitle reveal">A modest, neighborhood-scaled Shack on a block that already invites people to walk, sit, and stay.</p>
+        <div class="promise-grid">
+            <div class="promise-card reveal">
+                <div class="tag">Our Promise</div>
+                <h3>Fit the block.</h3>
+                <p>A Shack purpose-built for Glen Ridge &#8212; materials, signage, and scale that defer to the historic streetscape, reviewed under your COA process.</p>
+            </div>
+            <div class="promise-card reveal reveal-delay-1">
+                <div class="tag">Our Approach</div>
+                <h3>Listen first.</h3>
+                <p>Pre-application meetings with the HPC, neighbors within 200 ft, and the school community before final drawings are filed.</p>
+            </div>
+            <div class="promise-card reveal reveal-delay-2">
+                <div class="tag">Our Partnership</div>
+                <h3>Stay invested.</h3>
+                <p>Local hiring, local sourcing where we can, school-night fundraisers, and a single point of contact for the Borough &#8212; not a 1-800 number.</p>
+            </div>
+        </div>
+        <p class="cnbc-tag reveal reveal-delay-3">
+            <em>&#8220;We talk about ourselves as part of the fine-casual movement &#8212; leading it.&#8221;</em><br>
+            <cite>Rob Lynch on CNBC</cite>
+        </p>
+    </div>
+</section>
+
+<section class="sec sec-dark" id="why-gr">
+    <div class="sec-inner">
+        <span class="sec-label reveal">Why Glen Ridge</span>
+        <h2 class="sec-title reveal">You&#8217;re the kind of town<br>we build for.</h2>
+        <p class="sec-subtitle reveal">We&#8217;ve turned down more locations than we&#8217;ve opened. Glen Ridge isn&#8217;t a fit by accident &#8212; it&#8217;s a fit by design.</p>
+        <div class="why-grid">
+            <div class="why-card reveal">
+                <h3>A walkable Main Street.</h3>
+                <p>Glen Ridge is one of the most pedestrian-friendly boroughs in Essex County. Our smaller-format Shacks are designed for sidewalks, not parking lots.</p>
+            </div>
+            <div class="why-card reveal reveal-delay-1">
+                <h3>A family town.</h3>
+                <p>More than 70% of Glen Ridge households include children. Shake Shack is a Saturday-after-soccer kind of place.</p>
+            </div>
+            <div class="why-card reveal reveal-delay-2">
+                <h3>A district worth honoring.</h3>
+                <p>Your Historic District covers more than 90% of the Borough. We see that as a feature &#8212; not a hurdle. We&#8217;ve designed inside districts before.</p>
+            </div>
+        </div>
+        <div class="loc-gallery">
+            <div class="loc-card reveal"><img src="images/msp.jpg" alt="MSP"><div class="loc-overlay"><span>Madison Square Park, NYC</span></div></div>
+            <div class="loc-card reveal reveal-delay-1"><img src="images/dupont.jpg" alt="Dupont"><div class="loc-overlay"><span>Dupont Circle, D.C.</span></div></div>
+            <div class="loc-card reveal reveal-delay-2"><img src="images/newbury.jpg" alt="Newbury"><div class="loc-overlay"><span>Newbury St, Boston</span></div></div>
+            <div class="loc-card reveal reveal-delay-3"><img src="images/newhaven.jpg" alt="New Haven"><div class="loc-overlay"><span>New Haven, CT</span></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="sec sec-cream" id="concerns">
+    <div class="sec-inner">
+        <span class="sec-label reveal">We&#8217;ve Been Listening</span>
+        <h2 class="sec-title reveal">Here&#8217;s what neighbors<br>usually ask. We have answers.</h2>
+        <div class="faq-grid">
+            <div class="faq-item reveal"><h4>&#8220;Will it bring traffic?&#8221;</h4><p>Our typical Shack draws 60% of guests on foot or bike when sited near a walkable district. An independent traffic study will be filed with the application.</p></div>
+            <div class="faq-item reveal reveal-delay-1"><h4>&#8220;Will it look out of place?&#8221;</h4><p>No. The facade, signage, lighting, and materials will be drawn to your Historic Design Guidelines and reviewed under a Certificate of Appropriateness.</p></div>
+            <div class="faq-item reveal reveal-delay-2"><h4>&#8220;What about noise &amp; smell?&#8221;</h4><p>Closed-system kitchen ventilation with charcoal filtration. No outdoor speakers, no drive-thru. We close at 10 PM on weekends.</p></div>
+            <div class="faq-item reveal reveal-delay-3"><h4>&#8220;What about signage?&#8221;</h4><p>No internally-lit cabinets. Halo-lit, gooseneck-lamp, or painted-wood signs only &#8212; chosen with the HPC.</p></div>
+        </div>
+        <p style="margin-top:32px;text-align:center;font-size:15px;color:#888;font-style:italic;" class="reveal reveal-delay-4">Have a question we haven&#8217;t answered? Bring it tonight &#8212; that&#8217;s why we&#8217;re here.</p>
+    </div>
+</section>
+
+<section class="sec sec-white" id="design">
+    <div class="sec-inner">
+        <span class="sec-label reveal">Designed for Glen Ridge</span>
+        <h2 class="sec-title reveal">Not a prototype.<br>A <em style="font-family:'Playfair Display',serif">neighbor.</em></h2>
+        <p class="sec-subtitle reveal">Illustrative concept &#8212; subject to HPC review.</p>
+        <div class="design-grid">
+            <div class="design-card reveal"><img src="images/newhaven.jpg" alt="Brick" class="design-card-img"><div class="design-card-body"><h3>Brick over panel.</h3><p>Local red brick to match the streetscape &#8212; not branded paneling. Every material chosen to defer to the historic character of Bloomfield Avenue.</p></div></div>
+            <div class="design-card reveal reveal-delay-1"><img src="images/newbury.jpg" alt="Awning" class="design-card-img"><div class="design-card-body"><h3>Awning, not billboard.</h3><p>A single canvas awning in our green; signage scaled to the block. We don&#8217;t shout &#8212; we fit in.</p></div></div>
+            <div class="design-card reveal reveal-delay-2"><img src="images/dupont.jpg" alt="Lighting" class="design-card-img"><div class="design-card-body"><h3>Lamp posts, not floodlights.</h3><p>Gas-style fixtures and warm 2700K LEDs &#8212; no parking-lot glare. Evening ambiance that enhances, not overwhelms.</p></div></div>
+            <div class="design-card reveal reveal-delay-3"><img src="images/glendale.jpg" alt="Streetscape" class="design-card-img"><div class="design-card-body"><h3>Planters and benches.</h3><p>We add to the sidewalk; we don&#8217;t take from it. Native plantings, public seating, and a streetscape that serves everyone.</p></div></div>
+        </div>
+        <p style="margin-top:40px;font-size:14px;color:#888;text-align:center;font-style:italic;max-width:700px;margin-left:auto;margin-right:auto;" class="reveal">Every Shack is custom-drawn. Compare our Madison Square original, our Hudson Yards rail-shed, and our Asbury Park boardwalk Shack &#8212; three blocks, three buildings, one brand.</p>
+    </div>
+</section>
+
+<section class="sec sec-cream" id="process">
+    <div class="sec-inner">
+        <span class="sec-label reveal">Honoring the Historic District</span>
+        <h2 class="sec-title reveal">We come ready for your<br>process &#8212; not around it.</h2>
+        <div class="process-track reveal">
+            <div class="process-step"><div class="process-num">01</div><h4>Pre-Application</h4><p>Informal HPC walk-through with our architect before drawings are finalized.</p></div>
+            <div class="process-step"><div class="process-num">02</div><h4>Regular Application</h4><p>Filed 20+ days before HPC. Full digital package. Neighbor notice within 200 ft.</p></div>
+            <div class="process-step"><div class="process-num">03</div><h4>Public Hearing</h4><p>Architect of record present in-person. We listen, we revise, we return if asked.</p></div>
+            <div class="process-step"><div class="process-num">04</div><h4>COA Issued</h4><p>No exterior work begins until the Certificate of Appropriateness is issued and posted.</p></div>
+        </div>
+        <div class="standards-row reveal reveal-delay-2">
+            <div class="standard-item"><h4>Glen Ridge Historic Design Guidelines</h4><p>Fa&#231;ade scale, massing, fenestration &#8212; we design to your standards.</p></div>
+            <div class="standard-item"><h4>Secretary of the Interior&#8217;s Standards</h4><p>Compatible new construction &#8212; no mimicry, no contrast.</p></div>
+            <div class="standard-item"><h4>Borough Zoning Ordinance Title 17</h4><p>Use, height, setback, parking &#8212; fully compliant or variance-supported.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="sec sec-dark2" id="impact">
+    <div class="sec-inner">
+        <span class="sec-label reveal">What We Bring to Glen Ridge</span>
+        <h2 class="sec-title reveal">An anchor that gives more<br>than it takes.</h2>
+        <div class="stats-grid reveal reveal-delay-1">
+            <div class="stat-card"><div class="num">45+</div><div class="label">Local Jobs<br><small>Hourly + management. We promote from within.</small></div></div>
+            <div class="stat-card"><div class="num">$1.1M</div><div class="label">Annual Local Payroll<br><small>Wages that circulate inside Glen Ridge.</small></div></div>
+            <div class="stat-card"><div class="num">$120K+</div><div class="label">Annual Taxes<br><small>Sustained revenue for services &amp; schools.</small></div></div>
+            <div class="stat-card"><div class="num">5%</div><div class="label">Opening-Week Sales<br><small>Donated to a neighbor-chosen non-profit.</small></div></div>
+        </div>
+        <p class="stat-note reveal reveal-delay-2">And one promise we keep in every town: <strong style="color:var(--shak-green)">we will be a neighbor first, a restaurant second.</strong></p>
+    </div>
+</section>
+
+<section class="sec sec-white" id="pledge">
+    <div class="sec-inner">
+        <span class="sec-label reveal">Our Pledge to Glen Ridge</span>
+        <h2 class="sec-title reveal">If you have us,<br>we&#8217;ll have <em style="font-family:'Playfair Display',serif">you</em> back.</h2>
+        <div class="pledge-list">
+            <div class="pledge-item reveal"><div class="pledge-check">&#10003;</div><p>We will <strong>not break ground</strong> until the HPC issues a Certificate of Appropriateness.</p></div>
+            <div class="pledge-item reveal reveal-delay-1"><div class="pledge-check">&#10003;</div><p>We will <strong>hire local first</strong> &#8212; including students from Glen Ridge High School for summer roles.</p></div>
+            <div class="pledge-item reveal reveal-delay-2"><div class="pledge-check">&#10003;</div><p>We will publish a <strong>single Borough liaison, by name and cell phone</strong>, on day one.</p></div>
+            <div class="pledge-item reveal reveal-delay-3"><div class="pledge-check">&#10003;</div><p>We will host a <strong>Neighbors&#8217; Night every 90 days</strong> &#8212; open mic, open kitchen, no script.</p></div>
+        </div>
+        <div class="pledge-cta reveal reveal-delay-4">
+            <div class="tag">Next Step</div>
+            <p>Pre-application HPC walk-through &#8212; Wednesday, May 6 at 7:30 PM, Borough Hall.</p>
+        </div>
+    </div>
+</section>
+
+<section class="sec sec-dark closing">
+    <div class="closing-bg"></div>
+    <div class="sec-inner closing-content">
+        <span class="sec-label reveal">One More Thing</span>
+        <div class="closing-quote reveal reveal-delay-1">We don&#8217;t build Shake Shacks.</div>
+        <div class="closing-sub reveal reveal-delay-2">We build neighborhoods that happen to have one.</div>
+        <p class="closing-cite reveal reveal-delay-2">Rob Lynch &middot; CEO &middot; Shake Shack</p>
+        <p class="closing-thanks reveal reveal-delay-3">Thank you, Glen Ridge.</p>
+        <p class="closing-qa reveal reveal-delay-4">Your questions are next &#8212; and we have all night.</p>
+    </div>
+</section>
+
+<footer>
+    <span>&copy; 2026 Shake Shack Enterprises &middot; Confidential</span>
+    <span>All images sourced from <a href="https://shakeshack.com" target="_blank">shakeshack.com</a></span>
+</footer>
+
+<button class="chatbot-toggle" onclick="toggleChat()" aria-label="Open chat">
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+</button>
+
+<div class="chatbot-panel" id="chatPanel">
+    <div class="chatbot-header">
+        <div class="bot-avatar">&#127828;</div>
+        <div class="bot-info"><strong>Glen Ridge Community Assistant</strong><span>Ask anything about our proposal</span></div>
+    </div>
+    <div class="chatbot-messages" id="chatMessages">
+        <div class="chat-msg bot">Hi, neighbor! I'm here to answer questions about Shake Shack's proposal for Bloomfield Avenue. Ask me about design, zoning, jobs, impact &#8212; anything on your mind.</div>
+    </div>
+    <div class="chat-suggestions" id="chatSuggestions">
+        <button onclick="askSuggestion(this)">Will it look out of place?</button>
+        <button onclick="askSuggestion(this)">How many jobs?</button>
+        <button onclick="askSuggestion(this)">What about traffic?</button>
+        <button onclick="askSuggestion(this)">Who is Rob Lynch?</button>
+        <button onclick="askSuggestion(this)">What's the process?</button>
+    </div>
+    <div class="chatbot-input">
+        <input type="text" id="chatInput" placeholder="Ask about our proposal..." onkeydown="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+    </div>
+</div>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function toggleChat() { document.getElementById('chatPanel').classList.toggle('open'); }
+function askSuggestion(btn) { document.getElementById('chatInput').value = btn.textContent; sendMessage(); }
+
+const R = {
+    'design': "Every Shack is custom-drawn. For Glen Ridge we're proposing local red brick (not branded paneling), a single canvas awning in our green, gas-style lamp posts with warm 2700K LEDs, and native planters with public benches. All subject to HPC review.",
+    'zoning': "We've studied Borough Zoning Ordinance Title 17 cover to cover. Fully compliant on use, height, setback, and parking \u2014 or filed variance with full transparency. The COA process is our process too.",
+    'traffic': "Our typical Shack draws 60% of guests on foot or bike near walkable districts. We'll file an independent traffic study. No drive-thru. This is a sidewalk restaurant.",
+    'jobs': "45+ local jobs \u2014 hourly and management. We promote from within. That's $1.1M in annual local payroll, plus $120K+ in local and state taxes. We hire Glen Ridge High School students for summer roles.",
+    'noise': "Closed-system kitchen ventilation with charcoal filtration. No outdoor speakers, no drive-thru. We close at 10 PM on weekends. Designed to be a good neighbor.",
+    'community': "5% of opening-week sales donated to a neighbor-chosen Glen Ridge non-profit. Plus school-night fundraisers, local sourcing, and a Neighbors' Night every 90 days \u2014 open mic, open kitchen, no script.",
+    'signage': "No internally-lit cabinets. Halo-lit, gooseneck-lamp, or painted-wood signs only \u2014 chosen in collaboration with the HPC. Signage scaled to the block, not the highway.",
+    'process': "Four steps: 1) Pre-application walk-through with HPC, 2) Regular application filed 20+ days ahead with neighbor notice within 200 ft, 3) Public hearing with architect present in-person, 4) No exterior work until COA is issued.",
+    'rob': "Rob Lynch became CEO in 2024. He grew up in towns like Glen Ridge and believes in 'enlightened hospitality' \u2014 employees first, community always. His CNBC interview emphasized bringing Shake Shack to more communities 'the right way.'",
+    'history': "Started as a hot dog cart in Madison Square Park in 2001 \u2014 Danny Meyer's way of supporting a public art project. The permanent kiosk opened in 2004. Today: 550+ locations, each still built like a neighborhood spot.",
+    'materials': "Local red brick to match the streetscape. Canvas awning. Gas-style fixtures. Warm 2700K LEDs. Native planters. Every material drawn to your Historic Design Guidelines.",
+    'benefits': "45+ local jobs, $1.1M annual payroll, $120K+ in taxes, 5% of opening-week sales to a local non-profit, summer jobs for students, school-night fundraisers, and a named Borough liaison.",
+    'hpc': "We come ready for your process. Pre-application HPC walk-through first, then full Regular Application with digital package and neighbor notice. Public hearing with architect present. No work until COA is issued.",
+    'why': "Glen Ridge is a fit by design. Walkable, family-oriented (70%+ households with children), and 90%+ in the Historic District. Our smaller-format Shacks are made for sidewalks, not parking lots.",
+    'pledge': "Four commitments: No groundbreaking until COA is issued, hire local first including GRHS students, publish a named Borough liaison with cell phone on day one, Neighbors' Night every 90 days."
+};
+
+function findResponse(input) {
+    const l = input.toLowerCase();
+    for (const [k, v] of Object.entries(R)) { if (l.includes(k)) return v; }
+    if (l.match(/park|parking|car|drive/)) return R.traffic;
+    if (l.match(/job|employ|hire|work|pay/)) return R.jobs;
+    if (l.match(/build|construct|material|brick/)) return R.materials;
+    if (l.match(/sign/)) return R.signage;
+    if (l.match(/zone|permit|variance|comply|regulat|ordinance/)) return R.zoning;
+    if (l.match(/architect|look|style|appear|out of place|fit/)) return R.design;
+    if (l.match(/give|invest|bring|tax|money|economic/)) return R.benefits;
+    if (l.match(/historic|preserv|commission|coa|certificate/)) return R.hpc;
+    if (l.match(/step|how does|what happen|application/)) return R.process;
+    if (l.match(/when|long|time|next/)) return "The next step is a pre-application HPC walk-through on May 6 at 7:30 PM at Borough Hall. We don't rush \u2014 the final design will be shaped by the community.";
+    if (l.match(/who|ceo|lynch|leader/)) return R.rob;
+    if (l.match(/start|began|origin|found|story/)) return R.history;
+    if (l.match(/neighbor|event|partner|charit|donate|fundrais/)) return R.community;
+    if (l.match(/loud|hour|late|quiet|close|smell/)) return R.noise;
+    if (l.match(/why|choose|pick|glen ridge/)) return R.why;
+    if (l.match(/promise|pledge|commit|guarantee/)) return R.pledge;
+    return "Great question! That's exactly what we want to talk through at the pre-application HPC walk-through. Rob and our team will be there \u2014 no script, just a conversation. Anything specific I can help with?";
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    const messages = document.getElementById('chatMessages');
+    document.getElementById('chatSuggestions').style.display = 'none';
+    const userDiv = document.createElement('div');
+    userDiv.className = 'chat-msg user';
+    userDiv.textContent = msg;
+    messages.appendChild(userDiv);
+    input.value = '';
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.innerHTML = '<span></span><span></span><span></span>';
+    messages.appendChild(typingDiv);
+    messages.scrollTop = messages.scrollHeight;
+    setTimeout(() => {
+        messages.removeChild(typingDiv);
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-msg bot';
+        botDiv.textContent = findResponse(msg);
+        messages.appendChild(botDiv);
+        messages.scrollTop = messages.scrollHeight;
+    }, 800 + Math.random() * 700);
+}
+</script>
+</body>
+</html>
